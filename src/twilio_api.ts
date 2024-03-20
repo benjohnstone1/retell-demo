@@ -8,14 +8,16 @@ import {
   AudioEncoding,
 } from "retell-sdk/models/components";
 
+const segmentHandler = require("../functions/functions-webhooks");
+
 export class TwilioClient {
   private twilio: Twilio;
   private retellClient: RetellClient;
 
   constructor() {
     this.twilio = twilio(
-      process.env.TWILIO_ACCOUNT_ID,
-      process.env.TWILIO_AUTH_TOKEN,
+      process.env.TWILIO_ACCOUNT_SID_FLEX,
+      process.env.TWILIO_AUTH_TOKEN_FLEX,
     );
     this.retellClient = new RetellClient({
       apiKey: process.env.RETELL_API_KEY,
@@ -118,6 +120,20 @@ export class TwilioClient {
     }
   };
 
+  //Transfer to flex - call this after getting response back
+  SendToFlex = async (sid: string, workflowSid: string) => {
+    let twiml = `<Response><Enqueue workflowSid="${workflowSid}"></Enqueue><Task>{"action":"transfer to agent"</Task></Response>`;
+    console.log(twiml);
+    try {
+      const call = await this.twilio.calls(sid).update({
+        twiml: twiml,
+      });
+      console.log("Transfer call to agent: ", call.sid);
+    } catch (error) {
+      console.error("Twilio transfer error: ", error);
+    }
+  };
+
   // Twilio voice webhook
   ListenTwilioVoiceWebhook = (app: expressWs.Application) => {
     app.post(
@@ -125,6 +141,12 @@ export class TwilioClient {
       async (req: Request, res: Response) => {
         const agentId = req.params.agent_id;
         const answeredBy = req.body.AnsweredBy;
+        exports.callSid = req.body.CallSid;
+        exports.callerId = req.body.Caller;
+
+        //Trigger Segment identity
+        segmentHandler.makeSegmentIdentify(exports.callerId);
+
         try {
           // Respond with TwiML to hang up the call if its machine
           if (answeredBy && answeredBy === "machine_start") {

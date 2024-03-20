@@ -15,3 +15,8 @@ export interface RetellResponse {
   content_complete: boolean;
   end_call: boolean;
 }
+
+export interface Event {
+  log: string;
+  color: string;
+}
