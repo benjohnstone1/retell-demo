@@ -11,8 +11,6 @@ import {
 } from "retell-sdk/models/components";
 import { FunctionCallingLlmClient } from "./llm_openai_func_call";
 import { RetellRequest, Event } from "./types";
-//SSE
-import { createSession } from "better-sse";
 
 // Express Route
 const hackathonRoute = require("../routes/hackathon.route");
