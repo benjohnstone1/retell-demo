@@ -49,6 +49,14 @@ export class FunctionCallingLlmClient extends EventEmitter {
     this.intCount = 0;
   }
 
+  async emitEvent(log: string, color: string) {
+    const event = {
+      log: log,
+      color: color,
+    };
+    await this.emit("event", event);
+  }
+
   // First sentence requested
   BeginMessage(ws: WebSocket, initialGreeting: string, callSid: string) {
     const res: RetellResponse = {
@@ -63,14 +71,6 @@ export class FunctionCallingLlmClient extends EventEmitter {
       callSid,
     ); // only called once initially to create sync list
     ws.send(JSON.stringify(res));
-  }
-
-  async emitEvent(log: string, color: string) {
-    const event = {
-      log: log,
-      color: color,
-    };
-    await this.emit("event", event);
   }
 
   private ConversationToChatRequestMessages(
@@ -90,11 +90,13 @@ export class FunctionCallingLlmClient extends EventEmitter {
       result[this.intCount]?.role,
       callSid,
     );
-    syncService.writeTranscriptToTwilio(
-      result[this.intCount + 1]?.content,
-      result[this.intCount + 1]?.role,
-      callSid,
-    );
+    setTimeout(() => {
+      syncService.writeTranscriptToTwilio(
+        result[this.intCount + 1]?.content,
+        result[this.intCount + 1]?.role,
+        callSid,
+      );
+    }, 500);
 
     // send events
     if (!result[this.intCount]?.role || !result[this.intCount]?.content) {
@@ -115,7 +117,9 @@ export class FunctionCallingLlmClient extends EventEmitter {
       let message2 = `${result[this.intCount + 1]?.role}: ${
         result[this.intCount + 1]?.content
       }`;
-      this.emitEvent(message2, "black");
+      setTimeout(() => {
+        this.emitEvent(message2, "black");
+      }, 500);
     }
 
     this.intCount += 2;
@@ -295,7 +299,9 @@ export class FunctionCallingLlmClient extends EventEmitter {
         console.log(webhook_url);
 
         // Send event
-        let message = `Called function: ${funcCall.funcName} -> Tracked in Segment`;
+        let message = `Called function: ${
+          funcCall.funcName
+        } for ${JSON.stringify(funcCall.arguments)} -> Tracked in Segment`;
         this.emitEvent(message, "red");
 
         // Make callout to webhook
