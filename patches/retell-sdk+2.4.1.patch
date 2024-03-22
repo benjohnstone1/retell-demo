@@ -1,0 +1,13 @@
+diff --git a/node_modules/retell-sdk/lib/security.d.ts b/node_modules/retell-sdk/lib/security.d.ts
+index a1c4a49..2b7080a 100644
+--- a/node_modules/retell-sdk/lib/security.d.ts
++++ b/node_modules/retell-sdk/lib/security.d.ts
+@@ -5,7 +5,7 @@ export declare enum SecurityErrorCode {
+ }
+ export declare class SecurityError extends Error {
+     code: SecurityErrorCode;
+-    constructor(code: SecurityErrorCode, message: string, options?: ErrorOptions);
++    constructor(code: SecurityErrorCode, message: string, options?: any);
+     static incomplete(): SecurityError;
+     static unrecognizedType(type: string): SecurityError;
+ }
