@@ -321,8 +321,24 @@ export class FunctionCallingLlmClient extends EventEmitter {
         let message1 = `Function result: ${funcCall.result}`;
         this.emitEvent(message1, "green");
 
+        // Check Language
+        if (funcCall.funcName === "check_language") {
+          // will need to pass in agent Id
+          // get language from result
+          console.log(funcCall.result);
+          this.twilioClient.UpdateAgentLanguage(
+            "a5d1c7c8d3171331e07f0ac89c7ef859",
+            funcCall.result,
+            callSid,
+          );
+        }
+
         // Send to flex
         if (funcCall.funcName === "speak_to_agent") {
+          const summary = await functionsWebhookHandler.summarizeCall(
+            callSid,
+            this.client,
+          );
           setTimeout(() => {}, 5000); // Gives time for virtual agent to respond
           this.twilioClient.SendToFlex(
             callSid,

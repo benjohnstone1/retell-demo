@@ -11,8 +11,6 @@ import {
 } from "retell-sdk/models/components";
 import { FunctionCallingLlmClient } from "./llm_openai_func_call";
 import { RetellRequest, Event } from "./types";
-//SSE
-import { createSession } from "better-sse";
 
 // Express Route
 const hackathonRoute = require("../routes/hackathon.route");
@@ -124,17 +122,26 @@ export class Server {
         });
 
         // Pass in context from front-end service
-        var initialGreeting = hackathonRoute.userContext?.greeting ?? "Hello!";
+        var initialGreeting = hackathonRoute.userContext?.greeting ?? "Hello";
 
         var systemContext =
           hackathonRoute.userContext?.systemContext ??
-          "You are a customer support representative for Nike. You have a youthful and cheery personality. Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. Don't ask more than 1 question at a time. Don't make assumptions about what values to plug into functions. Ask for clarification if a user request is ambiguous. Speak out all prices to include the currency. Please help them decide between the Vaporfly, Air Max and Pegasus by asking questions like 'Do you prefer shoes that are for racing or for training?'. If they are trying to choose between the vaporfly and pegasus try asking them if they need a high mileage shoe. Once you know which shoe they would like ask them what size they would like to purchase and try to get them to place an order.";
+          "You should speak in the language given in agent settings. You are a customer support representative for Nike. You have a youthful and cheery personality. Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. Don't ask more than 1 question at a time. Don't make assumptions about what values to plug into functions. Ask for clarification if a user request is ambiguous. Speak out all prices to include the currency. Please help them decide between the Vaporfly, Air Max and Pegasus by asking questions like 'Do you prefer shoes that are for racing or for training?'. If they are trying to choose between the vaporfly and pegasus try asking them if they need a high mileage shoe. Once you know which shoe they would like ask them what size they would like to purchase and try to get them to place an order.";
 
         var functionContext =
           hackathonRoute.userContext?.functionContext ?? initialTools;
 
         // Start sending the begin message to signal the client is ready.
         this.llmClient.BeginMessage(ws, initialGreeting, twilio.callSid);
+
+        // Update to german
+        // works but need to call again - what does that do?
+        // unsure yet if working let's test chedkclanuage
+        // this.twilioClient.UpdateAgentLanguage(
+        //   twilio.agentId,
+        //   "de-DE",
+        //   twilio.callSid,
+        // );
 
         ws.on("error", (err) => {
           console.error("Error received in LLM websocket client: ", err);

@@ -96,6 +96,28 @@ let tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "check_language",
+      description: "what to do if person asks to speak another language",
+      parameters: {
+        type: "object",
+        properties: {
+          message: {
+            type: "string",
+            description:
+              "what you will say when switching language, make sure to respond in the new language requested",
+          },
+          locale: {
+            type: "string",
+            descriptoin: "language that user is requesting to speak in",
+          },
+        },
+        required: ["message"],
+      },
+    },
+  },
 ];
 
 module.exports = tools;

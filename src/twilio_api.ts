@@ -134,15 +134,44 @@ export class TwilioClient {
     }
   };
 
+  UpdateAgentLanguage = async (agentId: string, language: any, sid: string) => {
+    const getAgent = await this.retellClient.getAgent(agentId);
+    if (getAgent.agent.language === language) {
+      return;
+    } else {
+      // language has changed
+      const res = await this.retellClient.updateAgent(
+        {
+          language: language,
+        },
+        agentId,
+      );
+      console.log(res.agent);
+      let twiml = `<Response><Redirect method="POST">${process.env.NGROK_IP_ADDRESS}/twilio-voice-webhook/${agentId}</Redirect></Response>`;
+      console.log(twiml);
+      try {
+        const call = await this.twilio.calls(sid).update({
+          twiml: twiml,
+        });
+        console.log("Redirect call to: ", call.sid);
+      } catch (error) {
+        console.error("Twilio redirect error: ", error);
+      }
+    }
+  };
+
   // Twilio voice webhook
   ListenTwilioVoiceWebhook = (app: expressWs.Application) => {
     app.post(
       "/twilio-voice-webhook/:agent_id",
       async (req: Request, res: Response) => {
-        const agentId = req.params.agent_id;
+        exports.agentId = req.params.agent_id;
         const answeredBy = req.body.AnsweredBy;
         exports.callSid = req.body.CallSid;
         exports.callerId = req.body.Caller;
+
+        const agent = await this.retellClient.getAgent(exports.agentId);
+        console.log(agent.agent);
 
         //Trigger Segment identity
         segmentHandler.makeSegmentIdentify(exports.callerId);
@@ -155,7 +184,7 @@ export class TwilioClient {
           }
 
           const callResponse = await this.retellClient.registerCall({
-            agentId: agentId,
+            agentId: exports.agentId,
             audioWebsocketProtocol: AudioWebsocketProtocol.Twilio,
             audioEncoding: AudioEncoding.Mulaw,
             sampleRate: 8000,

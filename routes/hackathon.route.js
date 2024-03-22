@@ -30,9 +30,9 @@ const createTools = (functionContext) => {
           returns: {
             type: "object",
             properties: {
-              [functionContext[i].returnObjProperties[j].name]: {
-                type: functionContext[i].returnObjProperties[j].type,
-                description: functionContext[i].returnObjProperties[j].desc,
+              [functionContext[i].returnObjProperties[k].name]: {
+                type: functionContext[i].returnObjProperties[k].type,
+                description: functionContext[i].returnObjProperties[k].desc,
               },
             },
           },
@@ -45,36 +45,53 @@ const createTools = (functionContext) => {
   return tools;
 };
 
+let flexFunc = {
+  type: "function",
+  function: {
+    name: "speak_to_agent",
+    description: "Transfers call to an agent",
+    parameters: {
+      type: "object",
+      properties: {
+        message: {
+          type: "string",
+          description: "Let them know you will transfer them to an agent",
+        },
+      },
+      required: ["message"],
+    },
+  },
+};
+
 const createToolsRetell = (functionContext) => {
   const tools = [];
   for (let i = 0; i < functionContext.length; i++) {
     for (let j = 0; j < functionContext[i].properties.length; j++) {
-      for (let k = 0; k < functionContext[i].returnObjProperties.length; k++) {
-        var toolsObj = {
-          type: "function",
-          function: {
-            name: functionContext[i].retell_name,
-            description: functionContext[i].desc,
-            parameters: {
-              type: "object",
-              properties: {
-                message: {
-                  type: "string",
-                  description:
-                    "The message you will say before " +
-                    functionContext[i].desc,
-                },
-                [functionContext[i].properties[j].name]: {
-                  type: functionContext[i].properties[j].type,
-                  enum: functionContext[i].properties[j].enum,
-                  description: functionContext[i].properties[j].desc,
-                },
+      // for (let k = 0; k < functionContext[i].returnObjProperties.length; k++) {
+      var toolsObj = {
+        type: "function",
+        function: {
+          name: functionContext[i].retell_name,
+          description: functionContext[i].desc,
+          parameters: {
+            type: "object",
+            properties: {
+              message: {
+                type: "string",
+                description:
+                  "The message you will say before " + functionContext[i].desc,
               },
-              required: [functionContext[i].properties[j].name, "message"],
+              [functionContext[i].properties[j].name]: {
+                type: functionContext[i].properties[j].type,
+                enum: functionContext[i].properties[j].enum,
+                description: functionContext[i].properties[j].desc,
+              },
             },
+            required: [functionContext[i].properties[j].name, "message"],
           },
-        };
-      }
+        },
+      };
+      // }
     }
     if (toolsObj.function.name === "check_language") {
       // ignore this function for Retell
@@ -82,6 +99,8 @@ const createToolsRetell = (functionContext) => {
       tools.push(toolsObj);
     }
   }
+  console.dir(tools[0], { depth: null }); //print full object
+  tools.push(flexFunc);
   return tools;
 };
 
