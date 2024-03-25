@@ -329,6 +329,11 @@ export class FunctionCallingLlmClient extends EventEmitter {
 
         // Send to flex
         if (funcCall.funcName === "speak_to_agent") {
+          const summary = await functionsWebhookHandler.summarizeCall(
+            callSid,
+            this.client,
+          );
+
           setTimeout(() => {}, 5000); // Gives time for virtual agent to respond
           this.twilioClient.SendToFlex(
             callSid,

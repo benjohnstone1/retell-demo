@@ -45,6 +45,24 @@ const createTools = (functionContext) => {
   return tools;
 };
 
+let flexFunction = {
+  type: "function",
+  function: {
+    name: "speak_to_agent",
+    description: "Transfers call to an agent",
+    parameters: {
+      type: "object",
+      properties: {
+        message: {
+          type: "string",
+          description: "What you will say before transferring to an agent",
+        },
+      },
+      required: ["message"],
+    },
+  },
+};
+
 const createToolsRetell = (functionContext) => {
   const tools = [];
   for (let i = 0; i < functionContext.length; i++) {
@@ -80,6 +98,7 @@ const createToolsRetell = (functionContext) => {
       // ignore this function for Retell
     } else {
       tools.push(toolsObj);
+      tools.push(flexFunction);
     }
   }
   return tools;
